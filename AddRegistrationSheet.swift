@@ -1,0 +1,49 @@
+
+import SwiftUI
+import SwiftData
+
+struct AddRegistrationSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.modelContext) private var ctx
+
+    var defaultCar: Car?
+    @Query(sort: [SortDescriptor(\.name)]) private var cars: [Car]
+    @State private var selectedCar: Car?
+
+    @State private var stateOrProv: String = "OH"
+    @State private var validFrom: Date = .now
+    @State private var validTo: Date = Calendar.current.date(byAdding: .year, value: 1, to: .now)!
+    @State private var mileage: String = ""
+    @State private var amount: String = ""
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Picker("Car", selection: $selectedCar) {
+                    ForEach(cars) { car in Text(car.name).tag(Optional(car)) }
+                }
+                TextField("State / Province", text: $stateOrProv)
+                DatePicker("Valid From", selection: $validFrom, displayedComponents: .date)
+                DatePicker("Valid To", selection: $validTo, displayedComponents: .date)
+                TextField("Mileage", text: $mileage).keyboardType(.numberPad)
+                DecimalField(title: "Amount ($)", value: $amount)
+            }
+            .navigationTitle("Add Registration")
+            .onAppear { selectedCar = defaultCar ?? cars.first }
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel", action: { dismiss() }) }
+                ToolbarItem(placement: .confirmationAction) { Button("Save") { save() } }
+            }
+        }
+    }
+
+    private func save() {
+        guard let car = selectedCar else { return }
+        let merchant = Merchant(category: "DMV", name: "Ohio Motor Vehicle Dept.")
+        let amountDec = Decimal(string: amount) ?? 0
+        let mileageInt = Int(mileage) ?? 0
+        let e = RegistrationExpense(amount: amountDec, date: validFrom, mileage: mileageInt, stateOrProvince: stateOrProv, validFrom: validFrom, validTo: validTo, merchant: merchant, car: car)
+        ctx.insert(contentsOf: [merchant, e])
+        try? ctx.save(); dismiss()
+    }
+}
