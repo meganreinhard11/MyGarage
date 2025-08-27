@@ -1,0 +1,69 @@
+import SwiftUI
+import SwiftData
+
+@MainActor
+enum PreviewSampleData {
+    static let container: ModelContainer = {
+        // Same schema as your AppModelContainer, but in-memory for previews
+        let schema = Schema([
+            Address.self, Merchant.self, Car.self,
+            Expense.self, FuelExpense.self, RegistrationExpense.self, InsuranceExpense.self,
+            InsurancePolicy.self, InsuranceClaim.self, ClaimPhoto.self, PoliceReport.self,
+            MileageLog.self,
+            BatterySpec.self, BatteryExpense.self,
+            TireSpec.self, TireExpense.self,
+            WiperStyle.self, WiperSpec.self, WiperExpense.self,
+            LightBulbSpec.self, LightBulbExpense.self,
+            MaintenanceExpense.self, MaintenanceItem.self,
+            ParkingExpense.self, WindowExpense.self, CarWashExpense.self, TollExpense.self,
+            FloorMatsExpense.self, KeyFobBatteryExpense.self, CarTitleExpense.self,
+            DriversLicenseExpense.self, WiperFluidExpense.self
+        ])
+        let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let c = try! ModelContainer(for: schema, configurations: [config])
+
+        // Seed sample data (sync, no guards)
+        let ctx = ModelContext(c)
+
+        let costco  = Merchant(category: "Gas",       name: "Costco Gasoline")
+        let sunoco  = Merchant(category: "Gas",       name: "Sunoco")
+        let bp      = Merchant(category: "Gas",       name: "BP - Dublin")
+        let dmv     = Merchant(category: "DMV",       name: "Ohio BMV")
+        let insurer = Merchant(category: "Insurance", name: "Allied Insurance")
+
+        let car = Car(name: "2016 Honda Accord Ex-L", licensePlate: "ABC-1234")
+
+        [costco, sunoco, bp, dmv, insurer].forEach { ctx.insert($0) }
+        ctx.insert(car)
+
+        let f1 = FuelExpense(amount: 42.35, date: .now.addingTimeInterval(-86400 * 1), mileage: 9000, gallons: 11.2, unitPrice: 3.78, merchant: costco, car: car)
+        let f2 = FuelExpense(amount: 38.04, date: .now.addingTimeInterval(-86400 * 12), mileage: 8600, gallons: 10.1, unitPrice: 3.76, merchant: sunoco, car: car)
+
+        let reg = RegistrationExpense(amount: 75, date: .now.addingTimeInterval(-86400*90), mileage: 8500, stateOrProvince: "OH", validFrom: .now.addingTimeInterval(-86400*100), validTo: Calendar.current.date(byAdding: .year, value: 1, to: .now)!, merchant: dmv, car: car)
+
+        let policy = InsurancePolicy(policyNumber: "POL-12345", merchant: insurer)
+        policy.cars.append(car)
+        ctx.insert(policy)
+
+        let premium = InsuranceExpense(amount: 450, date: .now.addingTimeInterval(-86400*30), mileage: 8700, coverageType: "Full", deductible: 500, termStart: .now.addingTimeInterval(-86400*30), termEnd: Calendar.current.date(byAdding: .year, value: 1, to: .now)!, paidInFull: true, policy: policy, merchant: insurer, car: car)
+
+        let maint = MaintenanceExpense(amount: 120, date: .now.addingTimeInterval(-86400*40), mileage: 8400, serviceType: "Oil Change", merchant: bp, car: car)
+        maint.nextDueDate = Calendar.current.date(byAdding: .month, value: 6, to: .now)
+        maint.nextDueMiles = 9800
+        let item = MaintenanceItem(description: "Full Synthetic 0W-20", itemType: "Part", quantity: 1, unitCost: 75, maintenance: maint)
+        maint.items.append(item)
+
+        [f1, f2, reg, premium, maint].forEach { ctx.insert($0) }
+        try? ctx.save()
+
+        return c
+    }()
+
+    // Handy getters for previews
+    static func first<CarT: PersistentModel>(_ type: CarT.Type) -> CarT {
+        let ctx = ModelContext(container)
+        return (try? ctx.fetch(FetchDescriptor<CarT>()).first) ?? {
+            fatalError("Preview missing \(CarT.self)")
+        }()
+    }
+}
