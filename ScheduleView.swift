@@ -1,11 +1,15 @@
-
 import SwiftUI
 import SwiftData
 
 struct ScheduleView: View {
-    @Query(sort: [SortDescriptor(\.validTo)]) private var registrations: [RegistrationExpense]
-    @Query(sort: [SortDescriptor(\.termEnd)]) private var policyTerms: [InsuranceExpense]
-    @Query(sort: [SortDescriptor(\.nextDueDate)]) private var maint: [MaintenanceExpense]
+    @Query(sort: [SortDescriptor<RegistrationExpense>(\RegistrationExpense.validTo, order: .forward)])
+    private var registrations: [RegistrationExpense]
+
+    @Query(sort: [SortDescriptor<InsuranceExpense>(\InsuranceExpense.termEnd, order: .forward)])
+    private var policyTerms: [InsuranceExpense]
+
+    @Query(sort: [SortDescriptor<MaintenanceExpense>(\MaintenanceExpense.nextDueDate, order: .forward)])
+    private var maint: [MaintenanceExpense]
 
     var body: some View {
         VStack(spacing: 0) {
@@ -13,19 +17,45 @@ struct ScheduleView: View {
             List {
                 Section("Registration") {
                     ForEach(registrations) { r in
-                        NavigationLink { RegistrationRecordDetailView(expense: r) } label: { Card { row(title: "Registration (\(r.car.name))", subtitle: r.stateOrProvince, date: r.validTo) } }
-                            .listRowSeparator(.hidden).listRowBackground(Color.clear)
+                        NavigationLink {
+                            RegistrationRecordDetailView(expense: r)
+                        } label: {
+                            Card {
+                                row(title: "Registration (\(r.car.name))",
+                                    subtitle: r.stateOrProvince,
+                                    date: r.validTo)
+                            }
+                        }
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                     }
                 }
                 Section("Insurance") {
                     ForEach(policyTerms) { e in
-                        if let policy = e.policy { NavigationLink { PolicyDetailView(policy: policy) } label: { Card { row(title: "Insurance (\(e.car.name))", subtitle: e.coverageType ?? "Policy", date: e.termEnd) } } .listRowSeparator(.hidden).listRowBackground(Color.clear) }
+                        if let policy = e.policy {
+                            NavigationLink { PolicyDetailView(policy: policy) } label: {
+                                Card {
+                                    row(title: "Insurance (\(e.car.name))",
+                                        subtitle: e.coverageType ?? "Policy",
+                                        date: e.termEnd)
+                                }
+                            }
+                            .listRowSeparator(.hidden)
+                            .listRowBackground(Color.clear)
+                        }
                     }
                 }
                 Section("Maintenance") {
                     ForEach(maint) { m in
-                        NavigationLink { MaintenanceDetailView(expense: m) } label: { Card { row(title: m.serviceType, subtitle: m.car.name, date: m.nextDueDate ?? Date()) } }
-                            .listRowSeparator(.hidden).listRowBackground(Color.clear)
+                        NavigationLink { MaintenanceDetailView(expense: m) } label: {
+                            Card {
+                                row(title: m.serviceType,
+                                    subtitle: m.car.name,
+                                    date: m.nextDueDate ?? Date())
+                            }
+                        }
+                        .listRowSeparator(.hidden)
+                        .listRowBackground(Color.clear)
                     }
                 }
             }
@@ -34,7 +64,18 @@ struct ScheduleView: View {
         }
     }
 
-    @ViewBuilder private func row(title: String, subtitle: String, date: Date) -> some View {
-        HStack { VStack(alignment: .leading, spacing: 6) { Text(title).font(.headline); Text(subtitle).foregroundStyle(.secondary) }; Spacer(); VStack(alignment: .trailing) { Text(date, style: .date).bold(); Text(date, style: .time).foregroundStyle(.secondary) } }
+    @ViewBuilder
+    private func row(title: String, subtitle: String, date: Date) -> some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 6) {
+                Text(title).font(.headline)
+                Text(subtitle).foregroundStyle(.secondary)
+            }
+            Spacer()
+            VStack(alignment: .trailing) {
+                Text(date, style: .date).bold()
+                Text(date, style: .time).foregroundStyle(.secondary)
+            }
+        }
     }
 }
