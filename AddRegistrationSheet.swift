@@ -43,22 +43,28 @@ struct AddRegistrationSheet: View {
         let merchant = Merchant(category: "DMV", name: "Ohio Motor Vehicle Dept.")
         let amountDec = Decimal(string: amount) ?? 0
         let mileageInt = Int(mileage) ?? 0
-
+    
+        // Use the parent initializer, then set subclass props
         let e = RegistrationExpense(
             amount: amountDec,
             date: validFrom,
             mileage: mileageInt,
-            stateOrProvince: stateOrProv,
-            validFrom: validFrom,
-            validTo: validTo,
             merchant: merchant,
             car: car
         )
-
-        // Insert individually (no insert(contentsOf:))
+        e.stateOrProvince = stateOrProv
+        e.validFrom = validFrom
+        e.validTo = validTo
+    
         ctx.insert(merchant)
         ctx.insert(e)
         try? ctx.save()
         dismiss()
     }
+}
+
+#Preview("Add Registration") {
+    let car: Car = PreviewSampleData.first(Car.self)
+    return AddRegistrationSheet(defaultCar: car)
+        .modelContainer(PreviewSampleData.container)
 }
