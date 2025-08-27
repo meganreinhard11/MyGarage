@@ -1,86 +1,86 @@
 #Preview("Garage") {
     GarageView()
-        .modelContainer(PreviewSampleData.container)
+        .modelContainer(PreviewData.container)
 }
 
 
 #Preview("Fuel Log (car)") {
-    let car: Car = PreviewSampleData.first(Car.self)
+    let car: Car = PreviewData.first(Car.self)
     return FuelLogView(car: car)
-        .modelContainer(PreviewSampleData.container)
+        .modelContainer(PreviewData.container)
 }
 
 #Preview("Fuel Log (all)") {
     FuelLogView()
-        .modelContainer(PreviewSampleData.container)
+        .modelContainer(PreviewData.container)
 }
 
 
 #Preview("Fuel Card") {
     // Grab a sample expense from the preview container
-    let ctx = ModelContext(PreviewSampleData.container)
+    let ctx = ModelContext(PreviewData.container)
     let expense = try! ctx.fetch(FetchDescriptor<FuelExpense>(sortBy: [SortDescriptor(\.date, order: .reverse)])).first!
     return FuelCard(item: expense)
-        .modelContainer(PreviewSampleData.container)
+        .modelContainer(PreviewData.container)
         .padding()
         .background(Color(.systemGroupedBackground))
 }
 
 
 #Preview("Add Fuel") {
-    let car: Car = PreviewSampleData.first(Car.self)
+    let car: Car = PreviewData.first(Car.self)
     return AddFuelEntrySheet(car: car)
-        .modelContainer(PreviewSampleData.container)
+        .modelContainer(PreviewData.container)
 }
 
 
 #Preview("Registration") {
     RegistrationView()
-        .modelContainer(PreviewSampleData.container)
+        .modelContainer(PreviewData.container)
 }
 
 
 #Preview("Add Registration") {
-    let car: Car = PreviewSampleData.first(Car.self)
+    let car: Car = PreviewData.first(Car.self)
     return AddRegistrationSheet(defaultCar: car)
-        .modelContainer(PreviewSampleData.container)
+        .modelContainer(PreviewData.container)
 }
 
 
 #Preview("Service History") {
     ServiceHistoryView()
-        .modelContainer(PreviewSampleData.container)
+        .modelContainer(PreviewData.container)
 }
 
 
 #Preview("Schedule") {
     ScheduleView()
-        .modelContainer(PreviewSampleData.container)
+        .modelContainer(PreviewData.container)
 }
 
 
 #Preview("Policy Detail") {
-    let ctx = ModelContext(PreviewSampleData.container)
+    let ctx = ModelContext(PreviewData.container)
     let policy = try! ctx.fetch(FetchDescriptor<InsurancePolicy>()).first!
     return PolicyDetailView(policy: policy)
-        .modelContainer(PreviewSampleData.container)
+        .modelContainer(PreviewData.container)
 }
 
 
 #Preview("Tires") {
     TiresView()
-        .modelContainer(PreviewSampleData.container)
+        .modelContainer(PreviewData.container)
 }
 
 
 #Preview("Scan VIN") {
     ScanVINView()
-        .modelContainer(PreviewSampleData.container)
+        .modelContainer(PreviewData.container)
 }
 
 
 #Preview("Claim Photos") {
     ClaimPhotosView()
-        .modelContainer(PreviewSampleData.container)
+        .modelContainer(PreviewData.container)
 }
 
