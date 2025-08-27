@@ -7,8 +7,9 @@ final class RegistrationExpense: Expense {
     var validFrom: Date
     var validTo: Date
 
-    // Override the parent initializer; set your own defaults here.
+    // Must match the superclass init (note the `id:` parameter)
     override init(
+        id: UUID = UUID(),
         amount: Decimal,
         date: Date,
         mileage: Int,
@@ -17,10 +18,12 @@ final class RegistrationExpense: Expense {
         notes: String? = nil,
         isReimbursable: Bool = false
     ) {
+        // Set subclass stored properties before super.init
         self.stateOrProvince = ""
         self.validFrom = date
         self.validTo = date
         super.init(
+            id: id,
             amount: amount,
             date: date,
             mileage: mileage,
