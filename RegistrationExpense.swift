@@ -1,4 +1,4 @@
-
+// RegistrationExpense.swift
 import SwiftData
 
 @Model
@@ -7,10 +7,27 @@ final class RegistrationExpense: Expense {
     var validFrom: Date
     var validTo: Date
 
-    init(amount: Decimal, date: Date, mileage: Int, stateOrProvince: String, validFrom: Date, validTo: Date, merchant: Merchant, car: Car) {
-        self.stateOrProvince = stateOrProvince
-        self.validFrom = validFrom
-        self.validTo = validTo
-        super.init(amount: amount, date: date, mileage: mileage, merchant: merchant, car: car)
+    // Override the parent initializer; set your own defaults here.
+    override init(
+        amount: Decimal,
+        date: Date,
+        mileage: Int,
+        merchant: Merchant,
+        car: Car,
+        notes: String? = nil,
+        isReimbursable: Bool = false
+    ) {
+        self.stateOrProvince = ""
+        self.validFrom = date
+        self.validTo = date
+        super.init(
+            amount: amount,
+            date: date,
+            mileage: mileage,
+            merchant: merchant,
+            car: car,
+            notes: notes,
+            isReimbursable: isReimbursable
+        )
     }
 }
