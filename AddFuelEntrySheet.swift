@@ -1,4 +1,3 @@
-
 import SwiftUI
 import SwiftData
 
@@ -8,7 +7,7 @@ struct AddFuelEntrySheet: View {
 
     let car: Car
 
-    @State private var merchantName: String = "Costco Gasoline"
+    @State private var merchantName: String = ""
     @State private var date: Date = .now
     @State private var mileage: String = ""
     @State private var gallons: String = ""
@@ -21,23 +20,31 @@ struct AddFuelEntrySheet: View {
                 Section("Basics") {
                     TextField("Merchant", text: $merchantName)
                     DatePicker("Date", selection: $date, displayedComponents: .date)
-                    TextField("Odometer", text: $mileage).keyboardType(.numberPad)
+                    TextField("Mileage", text: $mileage)
+                        .keyboardType(.numberPad)
                 }
                 Section("Fuel") {
                     DecimalField(title: "Gallons", value: $gallons)
                     DecimalField(title: "Unit Price ($/gal)", value: $unitPrice)
                     DecimalField(title: "Amount ($)", value: $amount)
-                        .onChange(of: gallons + unitPrice) { _ in
-                            if let g = Decimal(string: gallons), let p = Decimal(string: unitPrice) {
+                        .onChange(of: (gallons, unitPrice), initial: true) { _, new in
+                            let (gStr, pStr) = new
+                            if let g = Decimal(string: gStr), let p = Decimal(string: pStr) {
                                 amount = NSDecimalNumber(decimal: g * p).stringValue
+                            } else {
+                                amount = ""
                             }
                         }
                 }
             }
             .navigationTitle("Add Fuel")
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel", action: { dismiss() }) }
-                ToolbarItem(placement: .confirmationAction) { Button("Save") { save() } }
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Cancel") { dismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button("Save") { save() }
+                }
             }
         }
     }
@@ -47,9 +54,24 @@ struct AddFuelEntrySheet: View {
         let mileageInt = Int(mileage) ?? 0
         let g = Decimal(string: gallons) ?? 0
         let p = Decimal(string: unitPrice) ?? 0
-        let a = Decimal(string: amount).map { $0 } ?? (g * p)
-        let e = FuelExpense(amount: a, date: date, mileage: mileageInt, gallons: g, unitPrice: p, merchant: m, car: car)
-        ctx.insert(contentsOf: [m, e])
-        try? ctx.save(); dismiss()
+        // If user overwrote amount, respect it; otherwise derive it from g * p
+        let a = Decimal(string: amount) ?? (g * p)
+
+        let e = FuelExpense(
+            amount: a,
+            date: date,
+            mileage: mileageInt,
+            gallons: g,
+            unitPrice: p,
+            merchant: m,
+            car: car
+        )
+
+        // Insert models individually (no insert(contentsOf:))
+        ctx.insert(m)
+        ctx.insert(e)
+
+        try? ctx.save()
+        dismiss()
     }
 }
