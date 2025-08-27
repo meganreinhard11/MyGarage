@@ -1,4 +1,3 @@
-
 import SwiftUI
 import SwiftData
 
@@ -7,7 +6,7 @@ struct AddRegistrationSheet: View {
     @Environment(\.modelContext) private var ctx
 
     var defaultCar: Car?
-    @Query(sort: [SortDescriptor(\.name)]) private var cars: [Car]
+    @Query(sort: [SortDescriptor<Car>(\Car.name, order: .forward)]) private var cars: [Car]
     @State private var selectedCar: Car?
 
     @State private var stateOrProv: String = "OH"
@@ -20,7 +19,9 @@ struct AddRegistrationSheet: View {
         NavigationStack {
             Form {
                 Picker("Car", selection: $selectedCar) {
-                    ForEach(cars) { car in Text(car.name).tag(Optional(car)) }
+                    ForEach(cars) { car in
+                        Text(car.name).tag(Optional(car))
+                    }
                 }
                 TextField("State / Province", text: $stateOrProv)
                 DatePicker("Valid From", selection: $validFrom, displayedComponents: .date)
@@ -31,7 +32,7 @@ struct AddRegistrationSheet: View {
             .navigationTitle("Add Registration")
             .onAppear { selectedCar = defaultCar ?? cars.first }
             .toolbar {
-                ToolbarItem(placement: .cancellationAction) { Button("Cancel", action: { dismiss() }) }
+                ToolbarItem(placement: .cancellationAction) { Button("Cancel") { dismiss() } }
                 ToolbarItem(placement: .confirmationAction) { Button("Save") { save() } }
             }
         }
@@ -42,8 +43,22 @@ struct AddRegistrationSheet: View {
         let merchant = Merchant(category: "DMV", name: "Ohio Motor Vehicle Dept.")
         let amountDec = Decimal(string: amount) ?? 0
         let mileageInt = Int(mileage) ?? 0
-        let e = RegistrationExpense(amount: amountDec, date: validFrom, mileage: mileageInt, stateOrProvince: stateOrProv, validFrom: validFrom, validTo: validTo, merchant: merchant, car: car)
-        ctx.insert(contentsOf: [merchant, e])
-        try? ctx.save(); dismiss()
+
+        let e = RegistrationExpense(
+            amount: amountDec,
+            date: validFrom,
+            mileage: mileageInt,
+            stateOrProvince: stateOrProv,
+            validFrom: validFrom,
+            validTo: validTo,
+            merchant: merchant,
+            car: car
+        )
+
+        // Insert individually (no insert(contentsOf:))
+        ctx.insert(merchant)
+        ctx.insert(e)
+        try? ctx.save()
+        dismiss()
     }
 }
