@@ -16,7 +16,9 @@ func seedIfNeeded() async {
 
     let car = Car(name: "2016 Honda Accord Ex-L", licensePlate: "")
     
-    [costco, sunoco, bp, dmv, insurer, car].forEach { context.insert($0) }
+    let merchants: [Merchant] = [costco, sunoco, bp, dmv, insurer]
+    merchants.forEach { context.insert($0) }
+    context.insert(car)
 
     let f1 = FuelExpense(amount: 3,   date: .now.addingTimeInterval(-3600*24),    mileage: 9000, gallons: 20, unitPrice: 0.15, merchant: sunoco, car: car)
     let f2 = FuelExpense(amount: 15,  date: .now.addingTimeInterval(-3600*24-1),  mileage: 8888, gallons: 3,  unitPrice: 5,    merchant: costco, car: car)
