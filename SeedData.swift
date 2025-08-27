@@ -59,7 +59,8 @@ func seedIfNeeded() async {
     let item = MaintenanceItem(description: "Full Synthetic 0W-20", itemType: "Part", quantity: 1, unitCost: 75, maintenance: maint)
     maint.items.append(item)
 
-    [f1, f2, f3, reg, premium, maint].forEach { context.insert($0) }
+    let expenses: [Expense] = [f1, f2, f3, reg, premium, maint]
+    expenses.forEach { context.insert($0) }
 
     try? context.save()
 }
